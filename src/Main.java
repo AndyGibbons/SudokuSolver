@@ -1,25 +1,18 @@
-package com.company;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import static java.lang.Boolean.*;
-
 class SudokuSolver {
 
-    private static String fileName = "Sudoku11.txt";
+    private static final String fileName = "Sudoku5.txt";
     private static String puzzleLine = null;
-    private static String delimiter = ",";
-    private static String[] puzzleEntries;
-    private static int gridSize = 9;
+    private static final String delimiter = ",";
+    private static final int gridSize = 9;
     private static int i = 0;
-    private static int[][] grid = new int[gridSize][gridSize];
+    private static final int[][] grid = new int[gridSize][gridSize];
     private static SudokuCell[][] puzzleGrid;
     private static SudokuCell[][] puzzleGridCopy;
-    private static boolean validPuzzle = false;
-    private static boolean solved = false;
 
 
     public static void main(String[] args) {
@@ -35,10 +28,10 @@ class SudokuSolver {
         System.out.println();
         System.out.println("Starting position:");
         PrintPuzzleGridValues();
-        validPuzzle = validatePuzzleGrid();
+        boolean validPuzzle = validatePuzzleGrid();
         System.out.println("Valid puzzle? = " + validPuzzle);
         if (validPuzzle) {
-            solved = solvePuzzle();
+            boolean solved = solvePuzzle();
             if (solved) {
                 System.out.println("Puzzle solved!");
             }else{
@@ -58,6 +51,7 @@ class SudokuSolver {
 
     private static void readInNumberGrid() {
         // Input puzzle
+        String[] puzzleEntries;
         try {
             File puzzleIn = new File(fileName);
             Scanner myReader = new Scanner(puzzleIn);
@@ -67,7 +61,7 @@ class SudokuSolver {
                 puzzleLine = myReader.nextLine();
 
                 // remove square brackets
-                puzzleLine = puzzleLine.replaceAll("\\[", "").replaceAll("\\]", "");
+                puzzleLine = puzzleLine.replaceAll("\\[", "").replaceAll("]", "");
 
                 // split line input into String array
                 puzzleEntries = puzzleLine.split(delimiter);
@@ -89,10 +83,6 @@ class SudokuSolver {
 
         if (puzzleLine == null) {
             System.out.println("Input file is empty");
-            return;
-        } else {
-            // split names input into String array
-            puzzleEntries = puzzleLine.split(delimiter);
         }
     }
 
@@ -108,13 +98,13 @@ class SudokuSolver {
     private static boolean validatePuzzleGrid() {
         //confirm the puzzle grid represents a valid Sudoku puzzle
         //ensure each row, column and 3x3 grid has no duplicate numbers
-        boolean validPuzzle = true;
+        boolean[] validPuzzle = new boolean[9];
         boolean[] usedValues = new boolean[gridSize];
 
         //check rows
         for (int i = 0; i < gridSize; i++) {
             for (int j = 0; j < gridSize; j++) {
-                if (puzzleGrid[i][j].value != 0 && usedValues[puzzleGrid[i][j].value - 1] == true) {
+                if (puzzleGrid[i][j].value != 0 && usedValues[puzzleGrid[i][j].value - 1]) {
                     return false;
                 }
                 if (puzzleGrid[i][j].value != 0) {
@@ -122,15 +112,13 @@ class SudokuSolver {
                 }
             }
             //reset usedValues array
-            for (int k = 0; k < gridSize; k++) {
-                usedValues[k] = false;
-            }
+            Arrays.fill(usedValues, false);
         }
 
         //check columns
         for (int j = 0; j < gridSize; j++) {
             for (int i = 0; i < gridSize; i++) {
-                if (puzzleGrid[i][j].value != 0 && usedValues[puzzleGrid[i][j].value - 1] == true) {
+                if (puzzleGrid[i][j].value != 0 && usedValues[puzzleGrid[i][j].value - 1]) {
                     return false;
                 }
                 if (puzzleGrid[i][j].value != 0) {
@@ -138,22 +126,25 @@ class SudokuSolver {
                 }
             }
             //reset usedValues array
-            for (int k = 0; k < gridSize; k++) {
-                usedValues[k] = false;
-            }
+            Arrays.fill(usedValues, false);
         }
 
-        validPuzzle = valid3x3(0, 0);
-        validPuzzle = valid3x3(0, 3);
-        validPuzzle = valid3x3(0, 6);
-        validPuzzle = valid3x3(3, 0);
-        validPuzzle = valid3x3(3, 3);
-        validPuzzle = valid3x3(3, 6);
-        validPuzzle = valid3x3(6, 0);
-        validPuzzle = valid3x3(6, 3);
-        validPuzzle = valid3x3(6, 6);
+        validPuzzle[0] = valid3x3(0, 0);
+        validPuzzle[1] = valid3x3(0, 3);
+        validPuzzle[2] = valid3x3(0, 6);
+        validPuzzle[3] = valid3x3(3, 0);
+        validPuzzle[4] = valid3x3(3, 3);
+        validPuzzle[5] = valid3x3(3, 6);
+        validPuzzle[6] = valid3x3(6, 0);
+        validPuzzle[7] = valid3x3(6, 3);
+        validPuzzle[8] = valid3x3(6, 6);
 
-        return validPuzzle;
+        for (int i = 0; i < 9; i++) {
+            if (!validPuzzle[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean valid3x3(int iStart, int jStart) {
@@ -163,7 +154,7 @@ class SudokuSolver {
 
         for (int i = iStart; i < iStart + 3; i++) {
             for (int j = jStart; j < jStart + 3; j++) {
-                if (puzzleGrid[i][j].value != 0 && usedValues[puzzleGrid[i][j].value - 1] == true) {
+                if (puzzleGrid[i][j].value != 0 && usedValues[puzzleGrid[i][j].value - 1]) {
                     return false;
                 }
                 if (puzzleGrid[i][j].value != 0) {
@@ -366,10 +357,6 @@ class SudokuSolver {
         //check relevant 3 x 3 for possible answers
         int aPair = 2;
 
-/*        if (iStart == 6 && jStart == 3 ) {
-            System.out.println("Got Here!");
-        }*/
-
         if (currentCell.getNumberOfPossibleSolutions() == aPair) {
             for (int i = iStart; i < iStart + 3; i++) {
                 for (int j = jStart; j < jStart + 3; j++) {
@@ -387,9 +374,6 @@ class SudokuSolver {
 
         int secondPossVal = 0;
 
-/*        if ((possVal == 1 && secondPossVal == 9) || (possVal == 9 && secondPossVal == 1)) {
-            System.out.println("Got Here!");
-        }*/
         for (int k = 1; k <= gridSize; k++) {
             if (puzzleGrid[row][col].getPossibleValue(k) && k != possVal) {
                 secondPossVal = k;
@@ -416,10 +400,6 @@ class SudokuSolver {
             }
         }
 
-/*        if ((possVal == 1 && secondPossVal == 9) || (possVal == 9 && secondPossVal == 1)) {
-            System.out.println("Got Here!");
-        }*/
-
         for (int i = 0; i < gridSize; i++) {
             if (i != row && puzzleGrid[i][col].value == 0 && SudokuCell.compare(puzzleGrid[i][col], puzzleGrid[row][col]) != 0) {
                 puzzleGrid[i][col].setNotPossibleValue(possVal);
@@ -438,10 +418,6 @@ class SudokuSolver {
                 break;
             }
         }
-
-/*        if ((possVal == 1 && secondPossVal == 9) || (possVal == 9 && secondPossVal == 1)) {
-            System.out.println("Got Here!");
-        }*/
 
         for (int i = iStart; i < iStart + 3; i++) {
             for (int j = jStart; j < jStart + 3; j++) {
@@ -526,7 +502,7 @@ class SudokuSolver {
     private static void checkForSolutionsInTripleRows() {
 
         for (int k = 1; k <= gridSize; k++) {
-            if (!inAllThreeRows(0, k)) {
+            if (inAllThreeRows(0, k)) {
                 for (int i = 0; i < 2; i++) {
                     for (int j = 0; j < gridSize; j++) {
                         if (puzzleGrid[i][j].value == k) {
@@ -538,7 +514,7 @@ class SudokuSolver {
         }
 
         for (int k = 1; k <= gridSize; k++) {
-            if (!inAllThreeRows(3, k)) {
+            if (inAllThreeRows(3, k)) {
                 for (int i = 3; i < 5; i++) {
                     for (int j = 0; j < gridSize; j++) {
                         if (puzzleGrid[i][j].value == k) {
@@ -550,7 +526,7 @@ class SudokuSolver {
         }
 
         for (int k = 1; k <= gridSize; k++) {
-            if (!inAllThreeRows(6, k)) {
+            if (inAllThreeRows(6, k)) {
                 for (int i = 6; i < 8; i++) {
                     for (int j = 0; j < gridSize; j++) {
                         if (puzzleGrid[i][j].value == k) {
@@ -574,11 +550,10 @@ class SudokuSolver {
                     if (puzzleGrid[i][j].value == valueToCheckFor) {
                         if (i == nextRow) {
                             lookForValueInOtherRow(lastRow, valueToCheckFor);
-                            return;
                         } else {
                             lookForValueInOtherRow(nextRow, valueToCheckFor);
-                            return;
                         }
+                        return;
                     }
                 }
             }
@@ -647,13 +622,13 @@ class SudokuSolver {
             }
         }
 
-        return inFirstRow && inSecondRow && inThirdRow;
+        return !inFirstRow || !inSecondRow || !inThirdRow;
     }
 
     private static void checkForSolutionsInTripleColumns() {
 
         for (int k = 1; k <= gridSize; k++) {
-            if (!inAllThreeColumns(0, k)) {
+            if (inAllThreeColumns(0, k)) {
                 for (int j = 0; j < 2; j++) {
                     for (int i = 0; i < gridSize; i++) {
                         if (puzzleGrid[i][j].value == k) {
@@ -665,7 +640,7 @@ class SudokuSolver {
         }
 
         for (int k = 1; k <= gridSize; k++) {
-            if (!inAllThreeColumns(3, k)) {
+            if (inAllThreeColumns(3, k)) {
                 for (int j = 3; j < 5; j++) {
                     for (int i = 0; i < gridSize; i++) {
                         if (puzzleGrid[i][j].value == k) {
@@ -677,7 +652,7 @@ class SudokuSolver {
         }
 
         for (int k = 1; k <= gridSize; k++) {
-            if (!inAllThreeColumns(6, k)) {
+            if (inAllThreeColumns(6, k)) {
                 for (int j = 6; j < 8; j++) {
                     for (int i = 0; i < gridSize; i++) {
                         if (puzzleGrid[i][j].value == k) {
@@ -701,11 +676,10 @@ class SudokuSolver {
                     if (puzzleGrid[i][j].value == valueToCheckFor) {
                         if (j == nextColumn) {
                             lookForValueInOtherColumns(lastColumn, valueToCheckFor);
-                            return;
                         } else {
                             lookForValueInOtherColumns(nextColumn, valueToCheckFor);
-                            return;
                         }
+                        return;
                     }
                 }
             }
@@ -774,12 +748,10 @@ class SudokuSolver {
             }
         }
 
-        return inFirstColumn && inSecondColumn && inThirdColumn;
+        return !inFirstColumn || !inSecondColumn || !inThirdColumn;
     }
 
     private static boolean isSolved() {
-
-        boolean solved = false;
 
         for (int i = 0; i < gridSize; i++) {
             for (int j = 0; j < gridSize; j++) {
@@ -788,11 +760,7 @@ class SudokuSolver {
                 }
             }
         }
-        if (validatePuzzleGrid()) {
-            return true;
-        }
-
-        return false;
+        return validatePuzzleGrid();
     }
 
     private static void PrintPuzzleGridValues() {
@@ -848,11 +816,11 @@ class SudokuSolver {
                         if (puzzleGrid[i][j].getPossibleValue(k)) {
                             puzzleGrid[i][j].setValue(k);
                             removeValueFromPossibleValueLists(puzzleGrid[i][j], k);
-                            if (solvePuzzle() == true){
+                            if (solvePuzzle()){
                                 return true;
                             }else{
                                 restorePuzzleGrid();
-                                if (solvePuzzle() == true) {
+                                if (solvePuzzle()) {
                                     return true;
                                 }
                             }

@@ -1,33 +1,25 @@
-package com.company;
+import java.util.Arrays;
 
 public class SudokuCell {
 
-    int value = 0;
+    int value;
     int iPos;
     int jPos;
     static int gridSize = 9;
     boolean[] possibleValues = new boolean [gridSize];
-    static boolean memberOfPair = false;
 
     public SudokuCell(int iPos, int jPos, int value) {
         this.iPos = iPos;
         this.jPos = jPos;
         this.value = value;
         if (value == 0) {
-            for (int i = 0; i < gridSize; i++) {
-                possibleValues[i] = true;
-            }
+            Arrays.fill(possibleValues, true);
         }
     }
 
     public void setValue (int valueIn){
         value = valueIn;
-        for (int i=0; i < gridSize; i++)
-            possibleValues[i] = false;
-    }
-
-    public int getValue () {
-        return value;
+        Arrays.fill(possibleValues, false);
     }
 
     public boolean getPossibleValue(int possValue) {
@@ -44,20 +36,6 @@ public class SudokuCell {
 
     public void setNotPossibleValue(int possValue) {
         this.possibleValues[possValue - 1] = false;
-    }
-
-    public void printCell(){
-        System.out.println(value);
-        System.out.println(iPos);
-        System.out.println(jPos);
-        System.out.println(gridSize);
-        for (int k = 1; k <= gridSize; k++){
-            if (getPossibleValue(k)){
-                System.out.print(k + " ");
-            }
-        }
-        System.out.println();
-        System.out.println();
     }
 
     public int getNumberOfPossibleSolutions() {
@@ -81,11 +59,4 @@ public class SudokuCell {
         return ++result;
     }
 
-    public boolean isMemberOfPair(){
-        return memberOfPair;
-    }
-
-    public void setMemberOfPair() {
-        memberOfPair = true;
-    }
 }
