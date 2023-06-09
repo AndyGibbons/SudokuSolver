@@ -1,3 +1,14 @@
+/*
+ This is a program to solve all soluble, valid 9x9 Sudoku puzzles. The program
+ implements the author's manual strategies for solving sudoku puzzles, and if
+ the fail, the program employs error guessing to come up with a solution.
+
+ A puzzle grid is created where each cell is a SudokuCell object
+
+ Author: Andy Gibbons
+ Latest update: June 2023
+*/
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
@@ -5,9 +16,8 @@ import java.util.Scanner;
 
 class SudokuSolver {
 
-    private static final String fileName = "Sudoku5.txt";
+
     private static String puzzleLine = null;
-    private static final String delimiter = ",";
     private static final int gridSize = 9;
     private static int i = 0;
     private static final int[][] grid = new int[gridSize][gridSize];
@@ -17,19 +27,39 @@ class SudokuSolver {
 
     public static void main(String[] args) {
 
-        readInNumberGrid();
+        String fileName;
+        Scanner myInput = new Scanner( System.in );
+        boolean fileFound = false;
+
+        // loop until a puzzle file is found
+        while (!fileFound) {
+            // get puzzle filename from user
+            System.out.print("Enter puzzle filename: ");
+            fileName = myInput.next();
+
+            // read the integers in the puzzle file into a grid
+            fileFound = readInNumberGrid(fileName);
+        }
+
         // create the Sudoku puzzle grid
         puzzleGrid = new SudokuCell[gridSize][gridSize];
         //create a copy of the puzzle grid to use for solution guessing (if required)
         puzzleGridCopy = new SudokuCell[gridSize][gridSize];
+
+        // create the puzzle grid and populate with the puzzle numbers
         populatePuzzleGrid();
+
         System.out.println("SUDOKU Solver");
         System.out.println("=============");
         System.out.println();
         System.out.println("Starting position:");
-        PrintPuzzleGridValues();
+        PrintPuzzleGridValues(); // print the puzzle as read in
+
+        // check that the puzzle is valid
         boolean validPuzzle = validatePuzzleGrid();
-        System.out.println("Valid puzzle? = " + validPuzzle);
+
+        System.out.println("Valid puzzle format? = " + validPuzzle);
+        // solve the puzzle if it  is valid
         if (validPuzzle) {
             boolean solved = solvePuzzle();
             if (solved) {
@@ -39,17 +69,20 @@ class SudokuSolver {
                 if (solved) {
                     System.out.println("Puzzle solved - after guessing!");
                 }else{
-                    System.out.println("Puzzle NOT solved!");
+                    System.out.println("Puzzle NOT soluble!");
                 }
             }
 
         }
 
         System.out.println("Final position:");
-        PrintPuzzleGridValues();
+        PrintPuzzleGridValues(); // completed puzzle
     }
 
-    private static void readInNumberGrid() {
+    private static Boolean readInNumberGrid(String fileName) {
+
+        final String delimiter = ",";
+
         // Input puzzle
         String[] puzzleEntries;
         try {
@@ -76,14 +109,26 @@ class SudokuSolver {
                 }
             }
 
+            if (puzzleLine == null) {
+                System.out.println("Input file is empty");
+                return false;
+            }
+
             myReader.close();
+            return true;
+
         } catch (FileNotFoundException e) {
             System.out.println("The given file does not exist.");
+            return false;
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("The given file does not contain a 9x9 puzzle grid.");
+            return false;
         }
 
-        if (puzzleLine == null) {
-            System.out.println("Input file is empty");
-        }
+
+
+
     }
 
     private static void populatePuzzleGrid() {
@@ -98,6 +143,7 @@ class SudokuSolver {
     private static boolean validatePuzzleGrid() {
         //confirm the puzzle grid represents a valid Sudoku puzzle
         //ensure each row, column and 3x3 grid has no duplicate numbers
+
         boolean[] validPuzzle = new boolean[9];
         boolean[] usedValues = new boolean[gridSize];
 
@@ -129,6 +175,7 @@ class SudokuSolver {
             Arrays.fill(usedValues, false);
         }
 
+        // check 3x3 grids
         validPuzzle[0] = valid3x3(0, 0);
         validPuzzle[1] = valid3x3(0, 3);
         validPuzzle[2] = valid3x3(0, 6);
@@ -801,10 +848,13 @@ class SudokuSolver {
     }
 
     private static boolean startGuessSolution() {
-    // If the strategies used do not sole the puzzle, a guess is made as to the correct value for any cells which have just two
-    // possible answers. The first possible value is tried, and the puzzle fed back into the solver. If that does not lead to a
-    // solution, the other value is tried. This continues if necessary until all cells with a pair of possible solutions have been
-    // tried. At this point, if no solution has been found, the puzzle cannot be solved by the solver.
+    /*
+     If the strategies used do not solve the puzzle, a guess is made as to the correct value for any cells which have
+     just two possible answers. The first possible value is tried, and the puzzle fed back into the solver. If that
+     does not lead to a solution, the other value is tried. This continues if necessary until all cells with a pair
+     of possible solutions have been tried. At this point, if no solution has been found, the puzzle cannot be solved
+     by the solver.
+    */
 
         int aPair = 2;
 
